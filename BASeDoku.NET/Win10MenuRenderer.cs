@@ -149,6 +149,21 @@ namespace BASeDoku
                 Color Light2 = Color.FromArgb(150, Color.DarkGray.R, Color.DarkGray.G, Color.DarkGray.B);
                 useBrush = new LinearGradientBrush(useBounds, Light1, Light2, LinearGradientMode.Vertical);
             }
+            else if(!e.Item.Enabled)
+            {
+                e.Graphics.FillRectangle(DarkBrush, useBounds);
+            }
+            else if((
+                e.Item.BackColor.R != SystemColors.Menu.R ||
+                e.Item.BackColor.G != SystemColors.Menu.G ||
+                e.Item.BackColor.B != SystemColors.Menu.B)
+                )
+            {
+                e.Graphics.SetClip(useBounds);
+                e.Graphics.Clear(e.Item.BackColor);
+                
+                //e.Graphics.FillRectangle(new SolidBrush(e.Item.BackColor),useBounds);
+            }
             if (useBrush != null) e.Graphics.FillRectangle(useBrush, useBounds);
 
             if (e.Item.Selected) useBrush.Dispose();
@@ -156,11 +171,17 @@ namespace BASeDoku
 
         protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
         {
-            e.TextColor = e.Item.Selected ? Color.White : Color.LightGray;
+            e.Graphics.SmoothingMode = SmoothingMode.None;
+            e.Graphics.CompositingQuality = CompositingQuality.AssumeLinear;
+            if(e.Item.ForeColor.R == SystemColors.MenuText.R &&
+               e.Item.ForeColor.G == SystemColors.MenuText.G &&
+               e.Item.ForeColor.B==SystemColors.MenuText.B)
+             e.TextColor = e.Item.Selected ? e.TextColor : Color.LightGray;
             if (!e.Item.Enabled)
             {
-                e.Item.Enabled = false;
-                e.Item.ForeColor = Color.SlateBlue;
+                e.Item.Enabled = true;
+                e.Item.ForeColor = Color.Transparent;
+                //e.Item.ForeColor = Color.SlateBlue;
                 base.OnRenderItemText(e);
                 e.Item.Enabled = false;
             }
@@ -244,6 +265,16 @@ namespace BASeDoku
 
             [DllImport("user32.dll")]
             private static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
+            [DllImport("user32.dll")]
+            private static extern int SetLayeredWindowAttributes(IntPtr hwnd, int crKey, byte bAlpha, int dwFlags);
+            private const int LWA_ALPHA = 0x2;
+            private const int LWA_COLORKEY = 0x1;
+            private const int WS_EX_LAYERED = 0x80000;
+            private const int GWL_EXSTYLE = -20;
+
+            [DllImport("user32.dll", EntryPoint = "SetWindowLongA")]
+            private static extern int SetWindowLong(IntPtr hwnd, int nIndex, int dwNewLong);
+
 
             [DllImport("dwmapi.dll", EntryPoint = "#127")]
             internal static extern void DwmGetColorizationParameters(ref DWMCOLORIZATIONPARAMS parms);
@@ -261,7 +292,8 @@ namespace BASeDoku
                 data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
                 data.SizeOfData = accentStructSize;
                 data.Data = accentPtr;
-
+                SetWindowLong(WindowHandle, GWL_EXSTYLE, WS_EX_LAYERED);
+                SetLayeredWindowAttributes(WindowHandle,Color.FromArgb(0,0,0,0).ToArgb(), 255, LWA_ALPHA);
                 SetWindowCompositionAttribute(WindowHandle, ref data);
 
                 Marshal.FreeHGlobal(accentPtr);

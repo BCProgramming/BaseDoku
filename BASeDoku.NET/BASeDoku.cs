@@ -23,6 +23,7 @@ namespace BASeDoku
         {
             Random rgen = new Random();
             GameBoard  = new SodokuBoard();
+            GameBoard.ColourScheme = BoardColourTheme.Windows10Theme();
             mStripMain.Renderer = new Win10MenuRenderer();
             foreach(var currCell in GameBoard.AllCells())
             {
@@ -72,13 +73,62 @@ namespace BASeDoku
                     {
 
                         ToolStripMenuItem BuildItem = new ToolStripMenuItem(i.ToString());
-                        BuildItem.Click += (o, ev) =>
+                        BuildItem.Font = new Font(new FontFamily("Consolas"), 20, FontStyle.Bold);
+                        if (ValidValues.Contains(i))
                         {
-                            SelectedCell.Value = int.Parse(BuildItem.Text);
-                            PicSodoku.Invalidate();
-                            PicSodoku.Refresh();
-                        };
-                        BuildItem.Enabled = ValidValues.Contains(i);
+                            BuildItem.Click += (o, ev) =>
+                            {
+                                SelectedCell.Value = int.Parse(BuildItem.Text);
+                                PicSodoku.Invalidate();
+                                PicSodoku.Refresh();
+                            };
+                        }
+                        else
+                        {
+                            //a "disabled" item.
+                            BuildItem.ForeColor = Color.FromArgb(128, 64, 64, 64);
+                            BuildItem.BackColor = Color.FromArgb(0, 64, 64, 64);
+                            BuildItem.MouseHover += (o2, ev2) =>
+                            {
+                                //when we hover over a disabled item, we want to highlight the cell(s) that are why this number cannot be selected.
+                                int FindNumber = int.Parse(BuildItem.Text);
+                                HashSet<SodokuCell> FoundNumbered = new HashSet<SodokuCell>();
+                                //look through the selected item's row...
+                                foreach(var findrow in GameBoard.GetRow(SelectedCell.Y))
+                                {
+                                    if(findrow.Value==FindNumber)
+                                        FoundNumbered.Add(findrow);
+                                }
+                                foreach(var findcol in GameBoard.GetColumn(SelectedCell.X))
+                                {
+                                    if (findcol.Value == FindNumber)
+                                        FoundNumbered.Add(findcol);
+                                }
+                                foreach(var searchmini in GameBoard.GetMiniGrid(SelectedCell).AllCells())
+                                {
+                                    if(searchmini.Value==FindNumber)
+                                    {
+                                        if(!FoundNumbered.Contains(searchmini))
+                                        {
+                                            FoundNumbered.Add(searchmini);
+                                        }
+                                    }
+                                }
+                                GameBoard.SetHighlight(FoundNumbered);
+                                PicSodoku.Invalidate();
+                                PicSodoku.Refresh();
+
+                            };
+                            
+                            cms.Closing += (o3, ev3) =>
+                            {
+                                GameBoard.ClearHighlight();
+                                PicSodoku.Invalidate();
+                                PicSodoku.Refresh();
+                            };
+                        }
+                        
+                        //BuildItem.Enabled = ValidValues.Contains(i);
                         cms.Items.Add(BuildItem);
                     }
                     ToolStripMenuItem ClearItem = new ToolStripMenuItem("Clear");
@@ -91,8 +141,8 @@ namespace BASeDoku
                     if (SelectedCell.Value != 0)
                         cms.Items.Add(ClearItem);
 
-                    cms.Opening += (Contextstrip, arguments) => { ((ContextMenuStrip)Contextstrip).Renderer = new Win10MenuRenderer(null, true); };
-
+                    cms.Opening += (Contextstrip, arguments) => { ((ContextMenuStrip)Contextstrip).Renderer = new Win10MenuRenderer(); };
+                    cms.Opened += Cms_Opened;
 
                     cms.Show(PicSodoku, e.X, e.Y);
 
@@ -103,6 +153,20 @@ namespace BASeDoku
             
             
 
+        }
+
+        private void Cms_Opened(object sender, EventArgs e)
+        {
+            ContextMenuStrip cms = sender as ContextMenuStrip;
+            if (cms.Renderer is Win10MenuRenderer) 
+            {
+                Win10MenuRenderer.DWMNativeMethods.DWM_BLURBEHIND bb = new Win10MenuRenderer.DWMNativeMethods.DWM_BLURBEHIND(true);
+                Win10MenuRenderer.DWMNativeMethods.EnableBlur(cms.Handle);
+            }
+            else
+            {
+                Win10MenuRenderer.DWMNativeMethods.EnableBlur(cms.Handle, false);
+            }
         }
 
         private void solvePuzzleToolStripMenuItem_Click(object sender, EventArgs e)
@@ -209,6 +273,7 @@ namespace BASeDoku
         private void generatePuzzleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             GameBoard = SodokuBoard.GeneratePuzzle();
+            GameBoard.ColourScheme = BoardColourTheme.Windows10Theme();
             PicSodoku.Invalidate();
             PicSodoku.Refresh();
         }

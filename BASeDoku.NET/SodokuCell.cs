@@ -24,6 +24,7 @@ namespace BASeDoku
 
         public bool Locked { get; set; }
 
+        public bool Highlighted { get; set; }
         private int _Value = 0;
         public int Value { get { return _Value; }
             set

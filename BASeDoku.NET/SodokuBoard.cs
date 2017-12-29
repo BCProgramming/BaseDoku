@@ -766,12 +766,27 @@ namespace BASeDoku
         {
             //throw new NotImplementedException();
         }
-
+        public void ClearHighlight()
+        {
+            foreach(var clearcell in AllCells())
+            {
+                clearcell.Highlighted = false;
+            }
+        }
+        public void SetHighlight(IEnumerable<SodokuCell> NewHighlight)
+        {
+            ClearHighlight();
+            foreach(var iterateentry in NewHighlight)
+            {
+                iterateentry.Highlighted = true;
+            }
+        }
         private void DrawCell(Graphics Target, Font useFont, SodokuCell pCell, float xPos, float  yPos,float pWidth,float pHeight)
         {
             TextThemeColors ActiveTextScheme = ColourScheme.Standard;
             if (pCell.Locked) ActiveTextScheme = ColourScheme.Locked;
             else if (pCell.Selected) ActiveTextScheme = ColourScheme.Selected;
+            if (pCell.Highlighted) ActiveTextScheme = ColourScheme.Highlighted;
             Color useBackColor = ActiveTextScheme.BackColor;
             Color useForeColor = ActiveTextScheme.TextColor;
             Color useOutline = ActiveTextScheme.Outline;
@@ -781,10 +796,10 @@ namespace BASeDoku
             Color MixGrid = ((MiniX-1) * 3 + MiniY-1) % 2 == 0 ? Color.SkyBlue : Color.IndianRed;
             Color MixFullGrid = ((pCell.X-1) * 9 + (pCell.Y-1)) % 2 == 0 ? Color.White : Color.AntiqueWhite;
 
-            Color MixAccent = MixColor(MixGrid, MixFullGrid);
+            Color MixAccent = BoardColourTheme.MixColor(MixGrid, MixFullGrid);
            
-            useBackColor = MixColor(useBackColor, MixAccent);
-            var useShadowcolor = MixColor(useBackColor, useShadow);
+            useBackColor = BoardColourTheme.MixColor(useBackColor, MixAccent);
+            var useShadowcolor = BoardColourTheme.MixColor(useBackColor, useShadow);
             String sCellText = pCell.Value.ToString();
             var MeasureSize = Target.MeasureString(sCellText, useFont);
             PointF TextPosition = new PointF((xPos+(pWidth/2) - MeasureSize.Width/2), (yPos + (pHeight / 2) - MeasureSize.Height / 2));
@@ -812,6 +827,7 @@ namespace BASeDoku
         {
             Target.CompositingQuality = CompositingQuality.HighQuality;
             Target.InterpolationMode = InterpolationMode.HighQualityBilinear;
+            Target.Clear(ColourScheme.Background);
             float pUseWidth = pWidth / 9f;
             float pUseHeight = pHeight / 9f;
             Pen UsePen = new Pen(Color.Black, 1);
@@ -854,15 +870,7 @@ namespace BASeDoku
 
         }
         
-        private Color MixColor(Color ColorA,Color ColorB)
-        {
-            return Color.FromArgb(
-                (ColorA.A + ColorB.A) / 2,
-                (ColorA.R + ColorB.R) / 2,
-                (ColorA.G + ColorB.G)/2,
-                (ColorA.B + ColorB.B)/2
-                );
-        }
+
 
         private static void Shuffle<T>(IList<T> list, Random rnd)
         {
