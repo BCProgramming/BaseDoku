@@ -31,8 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Elementizer">
-      <HintPath>..\..\..\..\Visual Studio 2015\Projects\BCNetMenu\BCNetMenu\Elementizer.dll</HintPath>
+    <Reference Include="Elementizer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\Elementizer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
