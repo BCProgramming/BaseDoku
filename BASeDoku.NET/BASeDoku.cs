@@ -19,11 +19,13 @@ namespace BASeDoku
             InitializeComponent();
         }
         SodokuBoard GameBoard = null;
+        SodokuBoardGDIPlusHandler BoardDrawHandler;
         private void BASeDoku_Load(object sender, EventArgs e)
         {
+            Icon = Resources.Application_Icon;
             Random rgen = new Random();
             GameBoard  = new SodokuBoard();
-            GameBoard.ColourScheme = BoardColourTheme.Windows10Theme();
+            BoardDrawHandler = new SodokuBoardGDIPlusHandler(GameBoard, BoardColourTheme.Windows10Theme());
             mStripMain.Renderer = new Win10MenuRenderer();
             foreach(var currCell in GameBoard.AllCells())
             {
@@ -37,7 +39,8 @@ namespace BASeDoku
 
         private void PicSodoku_Paint(object sender, PaintEventArgs e)
         {
-            GameBoard.Draw(e.Graphics, PicSodoku.ClientSize.Width, PicSodoku.ClientSize.Height);
+
+            BoardDrawHandler.Draw(e.Graphics, PicSodoku.ClientSize.Width, PicSodoku.ClientSize.Height);
         }
 
         private void BASeDoku_Resize(object sender, EventArgs e)
@@ -273,7 +276,7 @@ namespace BASeDoku
         private void generatePuzzleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             GameBoard = SodokuBoard.GeneratePuzzle();
-            GameBoard.ColourScheme = BoardColourTheme.Windows10Theme();
+            BoardDrawHandler.GameBoard = GameBoard;
             PicSodoku.Invalidate();
             PicSodoku.Refresh();
         }

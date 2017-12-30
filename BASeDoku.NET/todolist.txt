@@ -1,0 +1,7 @@
+﻿-implement generation of different difficulty levels.
+
+-Create proper, high resolution icon.
+
+-Printing support... Batch printing of "books?" A SodokuPrinter class could handle those aspects, number of pages, different difficulties, progressive, etc, maybe with aspects like cover art or something to print on the first page or for each section. Perhaps silly things like footnote quotations.
+
+

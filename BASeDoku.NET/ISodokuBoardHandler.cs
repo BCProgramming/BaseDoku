@@ -41,7 +41,5 @@ namespace BASeDoku
             OldValue = pOldValue;
             NewValue = pNewValue;
         }
-
-
     }
 }
