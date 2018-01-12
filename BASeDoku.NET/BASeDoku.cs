@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Media;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
@@ -20,6 +22,36 @@ namespace BASeDoku
         }
         SodokuBoard GameBoard = null;
         SodokuBoardGDIPlusHandler BoardDrawHandler;
+        private DateTime _StartPuzzleTime = DateTime.MinValue;
+        private System.Threading.Timer PuzzleTimer = null;
+        public DateTime StartPuzzleTime
+        {
+            get { return _StartPuzzleTime; }
+            set
+            {
+                _StartPuzzleTime = DateTime.Now;
+                if(PuzzleTimer!=null)
+                {
+                    PuzzleTimer.Dispose();
+                    PuzzleTimer = null;
+                }
+                PuzzleTimer = new System.Threading.Timer(PuzzleTime,null,0,100);
+            }
+        }
+        private void PuzzleTime(Object state)
+        {
+            try
+            {
+                Invoke((MethodInvoker)(() =>
+                {
+                    tStripElapsed.Text = (DateTime.Now - StartPuzzleTime).ToString(@"mm\:ss\.ff") + " Elapsed.";
+                }));
+            }
+            catch(Exception exx)
+            {
+
+            }
+        }
         private void BASeDoku_Load(object sender, EventArgs e)
         {
             Icon = Resources.Application_Icon;
@@ -27,6 +59,9 @@ namespace BASeDoku
             GameBoard  = new SodokuBoard();
             BoardDrawHandler = new SodokuBoardGDIPlusHandler(GameBoard, BoardColourTheme.Windows10Theme());
             mStripMain.Renderer = new Win10MenuRenderer();
+            BackColor = BoardDrawHandler.ColourScheme.Background;
+            statMain.BackColor = BackColor;
+            mStripMain.BackColor = SystemColors.Control;
             foreach(var currCell in GameBoard.AllCells())
             {
                 //currCell.Value = rgen.Next(1, 9);
@@ -81,6 +116,7 @@ namespace BASeDoku
                         {
                             BuildItem.Click += (o, ev) =>
                             {
+                                PushBoardState();
                                 SelectedCell.Value = int.Parse(BuildItem.Text);
                                 PicSodoku.Invalidate();
                                 PicSodoku.Refresh();
@@ -137,6 +173,7 @@ namespace BASeDoku
                     ToolStripMenuItem ClearItem = new ToolStripMenuItem("Clear");
                     ClearItem.Click += (o, ev) =>
                     {
+                        PushBoardState();
                         SelectedCell.Value = 0;
                         PicSodoku.Invalidate();
                         PicSodoku.Refresh();
@@ -176,6 +213,7 @@ namespace BASeDoku
         {
             try
             {
+                PushBoardState();
                 if (GameBoard.SolvePuzzle(0))
                 {
                     PicSodoku.Invalidate();
@@ -188,7 +226,34 @@ namespace BASeDoku
                 MessageBox.Show("Puzzle could not be solved.");
             }
         }
+        private Stack<int[,]> UndoStack = new Stack<int[,]>();
+        private Stack<int[,]> RedoStack = new Stack<int[,]>();
 
+        public void PushBoardState()
+        {
+            var boardstate = GameBoard.GetBoardState();
+            UndoStack.Push(boardstate);
+            RedoStack.Clear();
+        }
+        public void UndoState()
+        {
+            var popped = UndoStack.Pop();
+            var CurrentState = GameBoard.GetBoardState();
+            RedoStack.Push(CurrentState);
+            GameBoard.SetBoardState(popped);
+
+        }
+        public void RedoState()
+        {
+            var popped = RedoStack.Pop();
+            UndoStack.Push(popped);
+            GameBoard.SetBoardState(popped);
+        }
+        public void ClearUndoStacks()
+        {
+            UndoStack.Clear();
+            RedoStack.Clear();
+        }
         private void txtInputText_KeyPress(object sender, KeyPressEventArgs e)
         {
             txtInputText.Text = "";
@@ -205,6 +270,7 @@ namespace BASeDoku
                 }
                 else
                 {
+                    PushBoardState();
                     SelectedCell.Value = EnteredValue;
                     SelectedCell.Selected = false;
                     PicSodoku.Invalidate();
@@ -257,6 +323,7 @@ namespace BASeDoku
                     GameBoard.Load(ofd.FileName);
                     PicSodoku.Invalidate();
                     PicSodoku.Refresh();
+                    StartPuzzleTime = DateTime.Now;
                 }
             }
         }
@@ -275,15 +342,149 @@ namespace BASeDoku
 
         private void generatePuzzleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            GameBoard = SodokuBoard.GeneratePuzzle();
+            int emptycells = getEmptyCellCountForDifficulty();
+            GameBoard = SodokuBoard.GeneratePuzzle(emptycells);
             BoardDrawHandler.GameBoard = GameBoard;
+            PicSodoku.Invalidate();
+            PicSodoku.Refresh();
+            StartPuzzleTime = DateTime.Now;
+        }
+        private int getEmptyCellCountForDifficulty()
+        {
+            Random rgen = new Random();
+            if (easyToolStripMenuItem.Checked)
+                return 40 + rgen.Next(5);
+            else if(mediumToolStripMenuItem.Checked)
+            {
+                return 46 + rgen.Next(5);
+            }
+            else if(hardToolStripMenuItem.Checked)
+            {
+                return 50 + rgen.Next(3);
+            }
+            else if(veryHardToolStripMenuItem.Checked)
+            {
+                return 54 + rgen.Next(4);
+            }
+            return 45;
+        }
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void BASeDoku_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            try
+            {
+                PuzzleTimer.Dispose();
+            }
+            catch(Exception exx)
+            {
+
+            }
+        }
+
+        private void emptyBoardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            GameBoard = new SodokuBoard();
+            BoardDrawHandler.GameBoard = GameBoard;
+        }
+
+        private void easyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            easyToolStripMenuItem.Checked = !(mediumToolStripMenuItem.Checked = hardToolStripMenuItem.Checked = veryHardToolStripMenuItem.Checked = false);
+
+        }
+
+        private void mediumToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            mediumToolStripMenuItem.Checked = !(easyToolStripMenuItem.Checked = hardToolStripMenuItem.Checked = veryHardToolStripMenuItem.Checked = false);
+        }
+
+        private void hardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            hardToolStripMenuItem.Checked = !(easyToolStripMenuItem.Checked = mediumToolStripMenuItem.Checked = veryHardToolStripMenuItem.Checked = false);
+        }
+
+        private void veryHardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            veryHardToolStripMenuItem.Checked = !(easyToolStripMenuItem.Checked = mediumToolStripMenuItem.Checked = hardToolStripMenuItem.Checked = false);
+        }
+
+        private void editToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            redoToolStripMenuItem.Enabled = RedoStack.Count > 0;
+            undoToolStripMenuItem.Enabled = UndoStack.Count > 0;
+        }
+
+        private void undoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            UndoState();
             PicSodoku.Invalidate();
             PicSodoku.Refresh();
         }
 
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        private void redoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            RedoState();
+            PicSodoku.Invalidate();
+            PicSodoku.Refresh();
+        }
+
+        private void fileToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+
+        }
+        private void ToolStripMenuDropDown_Opened(object sender,EventArgs e)
+        {
+            ToolStripMenuItem cms = sender as ToolStripMenuItem;
+            var dd = cms.DropDown;
+            if (dd.Renderer is Win10MenuRenderer)
+            {
+                Win10MenuRenderer.DWMNativeMethods.DWM_BLURBEHIND bb = new Win10MenuRenderer.DWMNativeMethods.DWM_BLURBEHIND(true);
+                Win10MenuRenderer.DWMNativeMethods.EnableBlur(dd.Handle);
+            }
+            else
+            {
+                Win10MenuRenderer.DWMNativeMethods.EnableBlur(dd.Handle, false);
+            }
+        }
+
+        private void debugToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            List<TimeSpan> Elapsed = new List<TimeSpan>();
+            int ExecuteCount = 500;
+            int emptycells = getEmptyCellCountForDifficulty();
+            TimeSpan MinExec = TimeSpan.MaxValue;
+            TimeSpan MaxExec = TimeSpan.MinValue;
+            for(int i=0;i<ExecuteCount;i++)
+            {
+                Stopwatch watcher = new Stopwatch();
+                Thread.Sleep(500);
+                watcher.Start();
+                SodokuBoard GenerateBoard = SodokuBoard.GeneratePuzzle(emptycells);
+                watcher.Stop();
+                Debug.Print("Puzzle #" + i + " Generated in " + watcher.Elapsed.ToString());
+                if (MinExec > watcher.Elapsed) MinExec = watcher.Elapsed;
+                if (MaxExec < watcher.Elapsed) MaxExec = watcher.Elapsed;
+                Elapsed.Add(watcher.Elapsed);
+                //BoardDrawHandler.GameBoard = GameBoard;
+                Text = "Debug:" + i;
+                //PicSodoku.Invalidate();
+                //PicSodoku.Refresh();
+            }
+
+            TimeSpan AvgExec = new TimeSpan((int)Elapsed.Average((r) => r.Ticks));
+
+            String BuildStr = "Minimum:" + MinExec.ToString() + "\n" +
+                              "Maximum:" + MaxExec.ToString() + "\n" +
+                              "Average:" + AvgExec.ToString() + "\n";
+            Debug.Print("Minimum:" + MinExec.ToString());
+            Debug.Print("Maximum:" + MinExec.ToString());
+            Debug.Print("Average:" + AvgExec.ToString());
+            MessageBox.Show(BuildStr);
+
         }
     }
 }

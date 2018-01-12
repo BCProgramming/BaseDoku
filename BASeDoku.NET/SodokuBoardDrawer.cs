@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace BASeDoku
     {
         public BoardColourTheme ColourScheme = new BoardColourTheme();
         public SodokuBoard GameBoard = null;
-        
+        public bool DrawPossible = false;
         public SodokuBoardGDIPlusHandler(SodokuBoard gameBoard,BoardColourTheme Scheme)
         {
             GameBoard = gameBoard;
@@ -40,23 +41,51 @@ namespace BASeDoku
             String sCellText = pCell.Value.ToString();
             var MeasureSize = Target.MeasureString(sCellText, useFont);
             PointF TextPosition = new PointF((xPos + (pWidth / 2) - MeasureSize.Width / 2), (yPos + (pHeight / 2) - MeasureSize.Height / 2));
-
+            
             Target.FillRectangle(new SolidBrush(useBackColor), xPos, yPos, pWidth, pHeight);
-            //Target.DrawRectangle(new Pen(Color.Black,1),xPos,yPos,pWidth,pHeight);
-            if (pCell.Value != 0)
+
+
+
+
+
+
+            using (LinearGradientBrush lgb = new LinearGradientBrush(new RectangleF(xPos, yPos, pWidth, pHeight), Color.FromArgb(96, Color.Black), Color.FromArgb(0, Color.Black), LinearGradientMode.ForwardDiagonal))
             {
-                //GraphicsPath attempt...
-                /*using (GraphicsPath gpText = new GraphicsPath())
-                {
-                    gpText.AddString(sCellText, useFont.FontFamily, (int)FontStyle.Bold, useFont.Size, TextPosition, StringFormat.GenericDefault);
-                    
-                    
-                    Target.FillPath(new SolidBrush(useForeColor), gpText);
-                    if(pCell.Locked) Target.DrawPath(new Pen(useOutline), gpText);
-                }*/
-                Target.DrawString(sCellText, useFont, new SolidBrush(useShadowcolor), new PointF(TextPosition.X + 2, TextPosition.Y + 2));
-                Target.DrawString(sCellText, useFont, new SolidBrush(useForeColor), TextPosition);
+                Target.FillRectangle(lgb, xPos, yPos, pWidth, pHeight);
             }
+                //Target.DrawRectangle(new Pen(Color.Black,1),xPos,yPos,pWidth,pHeight);
+                if (pCell.Value != 0)
+                {
+                    //GraphicsPath attempt...
+                    /*using (GraphicsPath gpText = new GraphicsPath())
+                    {
+                        gpText.AddString(sCellText, useFont.FontFamily, (int)FontStyle.Bold, useFont.Size, TextPosition, StringFormat.GenericDefault);
+
+
+                        Target.FillPath(new SolidBrush(useForeColor), gpText);
+                        if(pCell.Locked) Target.DrawPath(new Pen(useOutline), gpText);
+                    }*/
+                    Target.DrawString(sCellText, useFont, new SolidBrush(useShadowcolor), new PointF(TextPosition.X + 2, TextPosition.Y + 2));
+                    Target.DrawString(sCellText, useFont, new SolidBrush(useForeColor), TextPosition);
+                }
+                else
+                {
+                    if (DrawPossible)
+                    {
+
+                        var ValidValues = GameBoard.GetValidValuesForCell(pCell);
+                        Font SmallStyle = new Font(new FontFamily(GenericFontFamilies.Monospace), (float)((pHeight * 1) / ValidValues.Count), FontStyle.Italic, GraphicsUnit.Pixel);
+                        String sPossible = String.Join(",", ValidValues);
+                        SizeF MeSize = Target.MeasureString(sPossible, SmallStyle);
+                        if (MeSize.Width < pWidth)
+                        {
+                            PointF TextPos = new PointF((xPos + (pWidth / 2) - MeSize.Width / 2), (yPos + (pHeight / 2) - MeSize.Height / 2));
+                            Target.DrawString(sPossible, SmallStyle, new SolidBrush(useForeColor), TextPos);
+                        }
+
+                    }
+                }
+            
 
         }
         private String DefaultCellFont = "Arial";

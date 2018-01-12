@@ -18,12 +18,34 @@ namespace BASeDoku
 {
     public class SodokuBoard : ISodokuBoardHandler
     {
+        //This is for "Normal" Soduku.
+        //The numbers 1 through 9 can only appear once in a row, column, or minigrid.
+
+
+        //We might support variants later. They might be able to re-use some aspects of this one.
+
+        //Sum Soduku has similar rules to Normal Sudoku, however it has an added quirk; in addition to those rules,
+        //there are also designated "areas" or 2 to 5 connected cells. The given cells must add up to a number indicated- typically the area is marked by a dotted line.
+        //Usually no number can appear more than once within a given area (which makes sense since otherwise it would just be a normal sodoku puzzle...)
+        //unfortunately we lose out on a lot of possible solver logic, though it should be possible to reason about such a puzzle. Generators could take longer- though it would also be possible
+        //to generate a normal puzzle and create areas within that "normal" that don't have any repeating values and indicate their sum to "cheat".
+    
+
+
+        //Each puzzle consists of a 9x9 Sudoku grid containing areas surrounded by gray or dotted lines. 
+        //The object is to fill all empty squares so that the numbers 1 to 9 appear exactly once in each row, 
+        //column and 3x3 box, and the sum of the numbers in each area is equal to the clue in the area’s top-left corner. 
+        //In addition, no number may be used in the same area more than once.
+
+
+
+
 
         private Dictionary<Tuple<int, int>, SodokuCell> CellData = new Dictionary<Tuple<int, int>, SodokuCell>();
         private Dictionary<SodokuCell, Tuple<int, int>> CellDataReverse = new Dictionary<SodokuCell, Tuple<int, int>>();
         private Dictionary<Tuple<int, int>, MiniGrid> MiniGrids = new Dictionary<Tuple<int, int>, MiniGrid>();
         private Dictionary<MiniGrid, Tuple<int, int>> MiniGridsReverse = new Dictionary<MiniGrid, Tuple<int, int>>();
-        
+        public event EventHandler<EventArgs> PuzzleSolved;
         public int RowCount { get; } = 9;
         public int ColumnCount { get; } = 9;
 
@@ -119,7 +141,7 @@ namespace BASeDoku
                 }
                 catch (ThreadAbortException tae)
                 {
-                    Completed = false;
+                    //Completed = true;
 
                     //aborted...
                 }
@@ -132,7 +154,7 @@ namespace BASeDoku
             int RestartCount = 0;
             while(!Completed)
             {
-                if(puzzletimer.Elapsed.TotalSeconds > 5)
+                if(puzzletimer.Elapsed.TotalSeconds > 10)
                 {
                     Debug.Print("Puzzle took too long to generate.");
                     PuzzleBuilder.Abort();
@@ -140,8 +162,10 @@ namespace BASeDoku
                     PuzzleBuilder = new Thread((w) => ThreadRoutine());
                     PuzzleBuilder.Start();
                     RestartCount++;
+                    Completed = false;
                     Debug.Print("Running generation again, restart count " + RestartCount);
                 }
+                Thread.Sleep(10);
             }
             //We choose random cells by taking the list of all Cells, and randomizing the list and taking the top 45.
 
@@ -189,14 +213,25 @@ namespace BASeDoku
 
 
         }
+        public static Random rng = new Random();
         public bool BruteForce_Solve(int RecursionCount,bool pRandomize = false)
         {
             //randomize will randomize the brute force algorithm a bit.
             //construct a new SodokuBoard as a working model, copying from this instance.
             //UnfilledCells are the initial cells we are working with..
-            var UnfilledCells = (from c in CellData.Values where c.Value == 0 orderby GetValidValuesForCell(c).Count ascending select c).ToList();
+            List<SodokuCell> UnfilledCells = null;
+            /*if(pRandomize)
+            {
+                UnfilledCells = (from c in CellData.Values where c.Value == 0 select c).ToList();
+            }*/
+            UnfilledCells = (from c in CellData.Values where c.Value == 0 orderby GetValidValuesForCell(c).Count ascending select c).ToList();
+            if (UnfilledCells.Count == 0) return false;
+            Debug.Print("Brute forcing puzzle. Starting point:");
+            Debug.Print(GetBoardStateString().Replace("|", "\n"));
+
+            Debug.Print("Brute forcing with " + UnfilledCells.Count + " Unfilled cells.");
             if (UnfilledCells.Count == 1) return false;
-            Random rng = new Random();
+            
             //if randomizing, randomize the cell order.
             if(pRandomize) Shuffle(UnfilledCells,rng);
 
@@ -208,6 +243,8 @@ namespace BASeDoku
                 if (pRandomize) Shuffle(CellValues,rng);
                 foreach (var possiblevalue in CellValues)
                 {
+                    Debug.Print("Copying current board state...");
+                    Debug.Print("Choosing value " + possiblevalue + " for cell at position:(" + UnfilledCell.X + "," + UnfilledCell.Y + ")");
                     //copy our "original" board state...
                     SodokuBoard sb = new SodokuBoard(this);
                     var fillcell = sb.GetCellAtPosition(UnfilledCell.X, UnfilledCell.Y);
@@ -219,6 +256,10 @@ namespace BASeDoku
                         //if it was successful- we are done. We want to get the boardstate of sb into ourselves now.
                         SetBoardState(sb.GetBoardState());
                         return true;
+                    }
+                    else
+                    {
+                        Debug.Print("No solution was found with value " + fillcell.Value + " at position: (" + UnfilledCell.X + ", " + UnfilledCell.Y + ") Recursion Level:" + RecursionCount);
                     }
                 }
             }
@@ -764,6 +805,19 @@ namespace BASeDoku
         }
         public void CellEvent(SodokuCellEvent eventarg)
         {
+            var temp = PuzzleSolved;
+            if (temp != null)
+            {
+                if (eventarg is SodokuCellEvent_Changed)
+                {
+                    if (IsPuzzleSolved())
+                    {
+
+                        temp.Invoke(this, new EventArgs());
+                    }
+
+                }
+            }
             //throw new NotImplementedException();
         }
         public void ClearHighlight()

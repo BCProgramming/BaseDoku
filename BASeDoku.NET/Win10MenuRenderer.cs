@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 
 
 namespace BASeDoku
@@ -143,6 +144,7 @@ namespace BASeDoku
                 e.Graphics.FillRectangle(DarkBrush, useBounds);
             }
             Brush useBrush = null;
+            
             if (e.Item.Selected)
             {
                 Color Light1 = Color.FromArgb(128, Color.DarkGray.R, Color.DarkGray.G, Color.DarkGray.B);
@@ -161,7 +163,9 @@ namespace BASeDoku
             {
                 e.Graphics.SetClip(useBounds);
                 e.Graphics.Clear(e.Item.BackColor);
-                
+            
+               
+                    
                 //e.Graphics.FillRectangle(new SolidBrush(e.Item.BackColor),useBounds);
             }
             if (useBrush != null) e.Graphics.FillRectangle(useBrush, useBounds);
@@ -173,14 +177,17 @@ namespace BASeDoku
         {
             e.Graphics.SmoothingMode = SmoothingMode.None;
             e.Graphics.CompositingQuality = CompositingQuality.AssumeLinear;
-            if(e.Item.ForeColor.R == SystemColors.MenuText.R &&
+            Color originalColor = e.TextColor;
+            if (e.Item.ForeColor.R == SystemColors.MenuText.R &&
                e.Item.ForeColor.G == SystemColors.MenuText.G &&
-               e.Item.ForeColor.B==SystemColors.MenuText.B)
+               e.Item.ForeColor.B == SystemColors.MenuText.B)
+            
              e.TextColor = e.Item.Selected ? e.TextColor : Color.LightGray;
             if (!e.Item.Enabled)
             {
                 e.Item.Enabled = true;
-                e.Item.ForeColor = Color.Transparent;
+                //if (_Blur) e.Item.ForeColor = Color.Transparent;
+                e.Item.ForeColor = Color.White;
                 //e.Item.ForeColor = Color.SlateBlue;
                 base.OnRenderItemText(e);
                 e.Item.Enabled = false;
@@ -188,6 +195,24 @@ namespace BASeDoku
             else
             {
                 base.OnRenderItemText(e);
+            }
+            e.TextColor = originalColor;
+        }
+
+        protected override void OnRenderItemCheck(ToolStripItemImageRenderEventArgs e)
+        {
+            Rectangle useBounds = new Rectangle(0, 0, e.Item.Bounds.Width, e.Item.Bounds.Height);
+            if (e.Item is ToolStripMenuItem)
+            {
+                var tsItem = e.Item as ToolStripMenuItem;
+                if (tsItem.Checked)
+                {
+                    //e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(128, Color.AntiqueWhite)), new Rectangle(0, 0, useBounds.Height, useBounds.Height));
+                    
+                    //e.Graphics.DrawString("b",new FontFamily("Marlett"),useBounds.Height,FontStyle.Bold),  GraphicsUnit.Pixel);
+                    e.Graphics.DrawString("b",new Font(new FontFamily("Marlett"),useBounds.Height,FontStyle.Bold,GraphicsUnit.Pixel),new SolidBrush(Color.White),0,0);
+                    
+                }
             }
         }
 
