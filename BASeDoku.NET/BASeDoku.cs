@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Media;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -485,6 +486,21 @@ namespace BASeDoku
             Debug.Print("Average:" + AvgExec.ToString());
             MessageBox.Show(BuildStr);
 
+        }
+        [DllImport("user32.dll")]
+        private static extern Int16 GetAsyncKeyState(int vKey);
+
+        private void newToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            var GetState = GetAsyncKeyState((int)Keys.ControlKey);
+            if (GetState==0)
+            {
+                debugToolStripMenuItem.Visible = false;
+            }
+            else
+            {
+                debugToolStripMenuItem.Visible = true;
+            }
         }
     }
 }

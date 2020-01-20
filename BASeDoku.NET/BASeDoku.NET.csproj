@@ -34,10 +34,6 @@
     <ApplicationIcon>Resources\Application_Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Elementizer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>.\Elementizer.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -106,6 +102,12 @@
     <None Include="Resources\Application_Icon.ico" />
     <None Include="Resources\ApplicationIcon.ico" />
     <Content Include="todolist.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\XMLSerialization\Elementizer.csproj">
+      <Project>{850a1563-ac23-4b60-bbcf-503b2bb69547}</Project>
+      <Name>Elementizer</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

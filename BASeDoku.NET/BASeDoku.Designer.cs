@@ -106,6 +106,7 @@
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
             this.newToolStripMenuItem.Size = new System.Drawing.Size(195, 26);
             this.newToolStripMenuItem.Text = "New";
+            this.newToolStripMenuItem.DropDownOpening += new System.EventHandler(this.newToolStripMenuItem_DropDownOpening);
             this.newToolStripMenuItem.DropDownOpened += new System.EventHandler(this.ToolStripMenuDropDown_Opened);
             // 
             // openToolStripMenuItem
