@@ -9,17 +9,17 @@ using System.Threading.Tasks;
 
 namespace BASeDoku
 {
-    public class SodokuBoardGDIPlusHandler
+    public class SudokuBoardGDIPlusHandler
     {
         public BoardColourTheme ColourScheme = new BoardColourTheme();
-        public SodokuBoard GameBoard = null;
+        public SudokuBoard GameBoard = null;
         public bool DrawPossible = false;
-        public SodokuBoardGDIPlusHandler(SodokuBoard gameBoard,BoardColourTheme Scheme)
+        public SudokuBoardGDIPlusHandler(SudokuBoard gameBoard,BoardColourTheme Scheme)
         {
             GameBoard = gameBoard;
             ColourScheme = Scheme;
         }
-        private void DrawCell(Graphics Target, Font useFont, SodokuCell pCell, float xPos, float yPos, float pWidth, float pHeight)
+        private void DrawCell(Graphics Target, Font useFont, SudokuCell pCell, float xPos, float yPos, float pWidth, float pHeight)
         {
             TextThemeColors ActiveTextScheme = ColourScheme.Standard;
             if (pCell.Locked) ActiveTextScheme = ColourScheme.Locked;
@@ -106,7 +106,7 @@ namespace BASeDoku
                 for (int y = 1; y <= 9; y++)
                 {
                     float YDrawPos = ((y - 1) * pUseHeight);
-                    SodokuCell GrabCell = GameBoard.GetCellAtPosition(x, y);
+                    SudokuCell GrabCell = GameBoard.GetCellAtPosition(x, y);
                     DrawCell(Target, UseFont, GrabCell, XDrawPos, YDrawPos, (int)pUseWidth, (int)pUseHeight);
 
                 }

@@ -16,7 +16,7 @@ using BASeCamp.Elementizer;
 
 namespace BASeDoku
 {
-    public class SodokuBoard : ISodokuBoardHandler
+    public class SudokuBoard : ISudokuBoardHandler
     {
         //This is for "Normal" Soduku.
         //The numbers 1 through 9 can only appear once in a row, column, or minigrid.
@@ -26,7 +26,7 @@ namespace BASeDoku
 
         //Sum Soduku has similar rules to Normal Sudoku, however it has an added quirk; in addition to those rules,
         //there are also designated "areas" or 2 to 5 connected cells. The given cells must add up to a number indicated- typically the area is marked by a dotted line.
-        //Usually no number can appear more than once within a given area (which makes sense since otherwise it would just be a normal sodoku puzzle...)
+        //Usually no number can appear more than once within a given area (which makes sense since otherwise it would just be a normal Sudoku puzzle...)
         //unfortunately we lose out on a lot of possible solver logic, though it should be possible to reason about such a puzzle. Generators could take longer- though it would also be possible
         //to generate a normal puzzle and create areas within that "normal" that don't have any repeating values and indicate their sum to "cheat".
     
@@ -41,8 +41,8 @@ namespace BASeDoku
 
 
 
-        private Dictionary<Tuple<int, int>, SodokuCell> CellData = new Dictionary<Tuple<int, int>, SodokuCell>();
-        private Dictionary<SodokuCell, Tuple<int, int>> CellDataReverse = new Dictionary<SodokuCell, Tuple<int, int>>();
+        private Dictionary<Tuple<int, int>, SudokuCell> CellData = new Dictionary<Tuple<int, int>, SudokuCell>();
+        private Dictionary<SudokuCell, Tuple<int, int>> CellDataReverse = new Dictionary<SudokuCell, Tuple<int, int>>();
         private Dictionary<Tuple<int, int>, MiniGrid> MiniGrids = new Dictionary<Tuple<int, int>, MiniGrid>();
         private Dictionary<MiniGrid, Tuple<int, int>> MiniGridsReverse = new Dictionary<MiniGrid, Tuple<int, int>>();
         public event EventHandler<EventArgs> PuzzleSolved;
@@ -70,7 +70,7 @@ namespace BASeDoku
                 for(int cell=1;cell<10;cell++)
                 {
                     Tuple<int,int> CellKey = new Tuple<int, int>(row,cell);
-                    SodokuCell GetCell = CellData[CellKey];
+                    SudokuCell GetCell = CellData[CellKey];
                     GetCell.Value = int.Parse(Cells[cell - 1]);
                 }
             }
@@ -84,7 +84,7 @@ namespace BASeDoku
                 for(int y=1;y<10;y++)
                 {
                     Tuple<int, int> KeyData = new Tuple<int, int>(x, y);
-                    SodokuCell sc = CellData[KeyData];
+                    SudokuCell sc = CellData[KeyData];
                     ConstructResult[x - 1, y - 1] = sc.Value;
                 }
             }
@@ -99,7 +99,7 @@ namespace BASeDoku
                     for(int y=1;y<10;y++)
                     {
                         Tuple<int, int> KeyData = new Tuple<int, int>(x, y);
-                        SodokuCell sc = CellData[KeyData];
+                        SudokuCell sc = CellData[KeyData];
                         sc.Value = StateData[x - 1, y - 1];
                     }
                 }
@@ -113,12 +113,12 @@ namespace BASeDoku
             }
 
         }
-        public static SodokuBoard GeneratePuzzle(int EmptyCells=45)
+        public static SudokuBoard GeneratePuzzle(int EmptyCells=45)
         {
-            Debug.Print("Generating a Sodoku Puzzle...");
+            Debug.Print("Generating a Sudoku Puzzle...");
             Random rng = new Random();
             bool builtpuzzle = false;
-            SodokuBoard buildBoard = null;
+            SudokuBoard buildBoard = null;
             int Attempts = 0;
             bool Completed = false;
             Action ThreadRoutine = () =>
@@ -131,7 +131,7 @@ namespace BASeDoku
 
                     while (!builtpuzzle)
                     {
-                        buildBoard = new SodokuBoard();
+                        buildBoard = new SudokuBoard();
 
                         Attempts++;
                         Debug.Print("Attempt " + Attempts + " generating puzzle...");
@@ -217,9 +217,9 @@ namespace BASeDoku
         public bool BruteForce_Solve(int RecursionCount,bool pRandomize = false)
         {
             //randomize will randomize the brute force algorithm a bit.
-            //construct a new SodokuBoard as a working model, copying from this instance.
+            //construct a new SudokuBoard as a working model, copying from this instance.
             //UnfilledCells are the initial cells we are working with..
-            List<SodokuCell> UnfilledCells = null;
+            List<SudokuCell> UnfilledCells = null;
             /*if(pRandomize)
             {
                 UnfilledCells = (from c in CellData.Values where c.Value == 0 select c).ToList();
@@ -246,7 +246,7 @@ namespace BASeDoku
                     Debug.Print("Copying current board state...");
                     Debug.Print("Choosing value " + possiblevalue + " for cell at position:(" + UnfilledCell.X + "," + UnfilledCell.Y + ")");
                     //copy our "original" board state...
-                    SodokuBoard sb = new SodokuBoard(this);
+                    SudokuBoard sb = new SudokuBoard(this);
                     var fillcell = sb.GetCellAtPosition(UnfilledCell.X, UnfilledCell.Y);
                     fillcell.Value = possiblevalue;
                     //set the given cell to this value.
@@ -269,7 +269,7 @@ namespace BASeDoku
         public void Save(String sTargetFile,bool sLockCells=false)
         {
             XDocument SaveDocument = new XDocument();
-            XElement RootNode = new XElement("SodokuBoard");
+            XElement RootNode = new XElement("SudokuBoard");
             SaveDocument.Add(RootNode);
             foreach(var LoopCell in CellData)
             {
@@ -292,7 +292,7 @@ namespace BASeDoku
             Clear();
             XDocument LoadDocument = XDocument.Load(sSourceFile);
             XElement RootNode = LoadDocument.Root;
-            if(RootNode.Name=="SodokuBoard")
+            if(RootNode.Name=="SudokuBoard")
             {
                 foreach(XElement BoardCellNode in RootNode.Elements("BoardCell"))
                 {
@@ -310,7 +310,7 @@ namespace BASeDoku
                 }
             }
         }
-        public SodokuBoard(SodokuBoard CloneSource)
+        public SudokuBoard(SudokuBoard CloneSource)
         {
             InitializeBoard();
             foreach(var cell in CellData)
@@ -319,15 +319,15 @@ namespace BASeDoku
                 cell.Value.Value = CloneSource.CellData[CellKey].Value;
             }
         }
-        public SodokuBoard()
+        public SudokuBoard()
         {
             InitializeBoard();
         }
       
         public void Clear()
         {
-            CellData = new Dictionary<Tuple<int, int>, SodokuCell>();
-            CellDataReverse = new Dictionary<SodokuCell, Tuple<int, int>>();
+            CellData = new Dictionary<Tuple<int, int>, SudokuCell>();
+            CellDataReverse = new Dictionary<SudokuCell, Tuple<int, int>>();
             MiniGrids = new Dictionary<Tuple<int, int>, MiniGrid>();
             MiniGridsReverse = new Dictionary<MiniGrid, Tuple<int, int>>();
             InitializeBoard();
@@ -339,7 +339,7 @@ namespace BASeDoku
                 for(int y = 1; y < 10; y++)
                 {
                     Tuple<int, int> BuildKey = new Tuple<int, int>(x, y);
-                    SodokuCell NewCell = new SodokuCell(this,x,y);
+                    SudokuCell NewCell = new SudokuCell(this,x,y);
                     CellData.Add(BuildKey,NewCell);
                     CellDataReverse.Add(NewCell,BuildKey);
                 }
@@ -365,7 +365,7 @@ namespace BASeDoku
             Tuple<int, int> GridKey = new Tuple<int, int>(MiniGridX, MiniGridY);
             return MiniGrids[GridKey];
         }
-        public MiniGrid GetMiniGrid(SodokuCell Cell)
+        public MiniGrid GetMiniGrid(SudokuCell Cell)
         {
             if (CellDataReverse.ContainsKey(Cell))
             {
@@ -383,9 +383,9 @@ namespace BASeDoku
             return GetMiniGrid(useX,useY);
                 
         }
-        public IList<int> GetValidValuesForCell(SodokuCell cell)
+        public IList<int> GetValidValuesForCell(SudokuCell cell)
         {
-            //when handling for a specific SodokuCell, we set the cell's value temporarily to 0.
+            //when handling for a specific SudokuCell, we set the cell's value temporarily to 0.
             int OriginalValue = cell.Value;
             try
             {
@@ -422,12 +422,12 @@ namespace BASeDoku
 
         }
         /// <summary>
-        /// Searches the SodokuBoard to try to find Twins. ModifiedPossibleValues will be adjusted based on discovered twins to eliminate those possibilities
+        /// Searches the SudokuBoard to try to find Twins. ModifiedPossibleValues will be adjusted based on discovered twins to eliminate those possibilities
         /// from the possible values of other cells in the appropriate row/column/minigrid.
         /// </summary>
         /// <param name="ModifiedPossibleValues"></param>
         /// <returns></returns>
-        private int FindTwins(ref Dictionary<SodokuCell, List<int>> ModifiedPossibleValues)
+        private int FindTwins(ref Dictionary<SudokuCell, List<int>> ModifiedPossibleValues)
         {
             //"Twins" are when multiple cells in the given set have two possible values that are the same.
             //these are important because if there are two cells in a column/row/minigrid that only have two possible values, we can eliminate both of those possible values from the 
@@ -436,11 +436,11 @@ namespace BASeDoku
             return FindGroups(ref ModifiedPossibleValues, 2);
         }
 
-        private int FindTriplets(ref Dictionary<SodokuCell,List<int>> ModifiedPossibleValues)
+        private int FindTriplets(ref Dictionary<SudokuCell,List<int>> ModifiedPossibleValues)
         {
             return FindGroups(ref ModifiedPossibleValues, 3);
         }
-        private int FindGroups(ref Dictionary<SodokuCell,List<int>> ModifiedPossibleValues,int GroupCount=2)
+        private int FindGroups(ref Dictionary<SudokuCell,List<int>> ModifiedPossibleValues,int GroupCount=2)
         {
             int TotalCount = 0;
             for (int x = 1; x < 10; x++)
@@ -459,11 +459,11 @@ namespace BASeDoku
             }
             return TotalCount;
         }
-        private int FindGroups_Set(IEnumerable<SodokuCell> Cells, ref Dictionary<SodokuCell,List<int>> ModifiedPossibleValues,int CheckCount=2)
+        private int FindGroups_Set(IEnumerable<SudokuCell> Cells, ref Dictionary<SudokuCell,List<int>> ModifiedPossibleValues,int CheckCount=2)
         {//Finds Twins, Triplets,etc in a given set of cells, and adjusts the possible values for other cells.
             
             int AffectedCells = 0;
-            List<SodokuCell> GroupCells = new List<SodokuCell>();
+            List<SudokuCell> GroupCells = new List<SudokuCell>();
             Dictionary<String, int> GroupData = new Dictionary<string, int>();
             //get all cells that have only the given number of possible values.
             foreach(var iterate in Cells)
@@ -486,7 +486,7 @@ namespace BASeDoku
             //if we have no cells with two possibilities, then we are done.
             if (GroupCells.Count == 0) return 0;
             var dupepossible = ModifiedPossibleValues;
-            List<SodokuCell> grabtwins = new List<SodokuCell>();
+            List<SudokuCell> grabtwins = new List<SudokuCell>();
             foreach(var tc in GroupCells)
             {
                 var possibles = ModifiedPossibleValues[tc];
@@ -519,7 +519,7 @@ namespace BASeDoku
             return AffectedCells;
 
         }
-        private int ColumnRowMinigridElimination(Dictionary<SodokuCell,List<int>> ModifiedPossibleValues)
+        private int ColumnRowMinigridElimination(Dictionary<SudokuCell,List<int>> ModifiedPossibleValues)
         {
 
             //Modified Possible Values is in place for Twins and Triplets  which do some preprocessing beyond GetValidValuesForCell() to eliminate possible entries.
@@ -552,7 +552,7 @@ namespace BASeDoku
             } while (ValueChanged);
             return ValueChangeCount;
         }
-        private int HuntLoneRangers(Dictionary<SodokuCell, List<int>> ModifiedPossibleValues)
+        private int HuntLoneRangers(Dictionary<SudokuCell, List<int>> ModifiedPossibleValues)
         {
             int RunningChangeCount = 0;
             for(int x=1;x<10;x++)
@@ -570,28 +570,150 @@ namespace BASeDoku
             }
             return RunningChangeCount;
         }
-        private int LoneRangerSearch_Column(Dictionary<SodokuCell, List<int>> ModifiedPossibleValues,int i)
+        private int LoneRangerSearch_Column(Dictionary<SudokuCell, List<int>> ModifiedPossibleValues,int i)
         {
             return LoneRangerSearch(ModifiedPossibleValues,GetColumnEnumerable(i));
         }
-        private int LoneRangerSearch_Row(Dictionary<SodokuCell, List<int>> ModifiedPossibleValues,int i)
+        private int LoneRangerSearch_Row(Dictionary<SudokuCell, List<int>> ModifiedPossibleValues,int i)
         {
             return LoneRangerSearch(ModifiedPossibleValues,GetRowEnumerable(i));
         }
-        private int LoneRangerSearch_Minigrid(Dictionary<SodokuCell, List<int>> ModifiedPossibleValues,MiniGrid mg)
+        private int LoneRangerSearch_Minigrid(Dictionary<SudokuCell, List<int>> ModifiedPossibleValues,MiniGrid mg)
         {
             return LoneRangerSearch(ModifiedPossibleValues,mg.AllCells());
         }
-        private int LoneRangerSearch(Dictionary<SodokuCell, List<int>> ModifiedPossibleValues, IEnumerable<SodokuCell> SearchEntries)
+        private int XYElimination(Dictionary<SudokuCell,List<int>> ModifiedPossibleValues)
+        {
+            int ChangeCount = 0;
+            //go through all Minigrids...
+            foreach(var mg in MiniGrids)
+            {
+                //go through all rows of this grid
+                foreach(var rownum in mg.Value.RowNumbers)
+                {
+                    var newchange = XYElimination(ModifiedPossibleValues, mg.Value.AllCells(), GetRowEnumerable(rownum));
+                    if(newchange > 0)
+                    {
+                        ChangeCount = newchange;
+                        return ChangeCount;
+                    }
+                }
+                foreach(var colnum in mg.Value.ColumnNumbers)
+                {
+                    var newchange = XYElimination(ModifiedPossibleValues, mg.Value.AllCells(), GetColumnEnumerable(colnum));
+                    if (newchange > 0)
+                    {
+                        ChangeCount = newchange;
+                        return ChangeCount;
+                    }
+                }
+            }
+            return 0;
+        }
+        private int XYElimination(Dictionary<SudokuCell, List<int>> ModifiedPossibleValues, IEnumerable<SudokuCell> FirstUnit, IEnumerable<SudokuCell> SecondUnit)
+        {
+            int ChangeCount = 0;
+            //We take Two sets of cells, of two separate, but connected units. (base algorithm would go through each minigrid and then have the second set be each column or row in that minigrid)
+            var AllFirst = FirstUnit.ToList();
+            var AllSecond = SecondUnit.ToList();
+            //first, strip down the units to only elements that have two candidates.
+
+            var FirstUnitTwoCandidates = (from f in FirstUnit where ModifiedPossibleValues[f].Count == 2 select f);
+            var SecondUnitTwoCandidates = (from s in SecondUnit where ModifiedPossibleValues[s].Count == 2 select s);
+
+            //now, search through the First Unit and find two cells that have one of the same possible value, but where the other is not the same between them. (If they are the same they are a twin and that is separate logic)
+            List<Tuple<SudokuCell, SudokuCell>> Wings = new List<Tuple<SudokuCell, SudokuCell>>();
+            foreach(var f1 in FirstUnitTwoCandidates)
+            {
+                foreach(var f2 in FirstUnitTwoCandidates)
+                {
+                    
+                    if (f1 == f2) continue;
+                    var f1Possible = ModifiedPossibleValues[f1];
+                    var f2Possible = ModifiedPossibleValues[f2];
+                    if(f2Possible.Contains(f1Possible[0]) && !f2Possible.Contains(f1Possible[1]) || 
+                        (f1Possible.Contains(f2Possible[0]) && !f1Possible.Contains(f2Possible[1])))
+                    {
+                        if (!Wings.Any((w) => (w.Item1 == f1 && w.Item2 == f2) || w.Item1 == f2 && w.Item2 == f1))
+                        {
+                            //the first candidate of f1 is in f2 but the second candidate is not in f2, or the first candidate in f2 is in f1 but the second candidate of f2 is not in f1
+                            //also, this pair is not already in the list of wing elements in the unit.
+                            Wings.Add(new Tuple<SudokuCell, SudokuCell>(f1, f2));
+                        }
+
+
+                    }
+                }
+            }
+            //Now we have a list of wings for the first unit.
+            //What we need to do now is take each wing and search the second unit for a cell that has the two distinct candidates.
+            //eg if we have a wing of 1,5 and 5,3, then we look for a candidate in the other unit with 1,3.
+            //if we find one, we can eliminate the shared candidate of that cell as well as any cell that is a "buddy" with that cell and either of the wing cells.
+            foreach(var wingcheck in Wings)
+            {
+                var firstCandidates = ModifiedPossibleValues[wingcheck.Item1];
+                var secondCandidates = ModifiedPossibleValues[wingcheck.Item2];
+                var FirstGrid = GetMiniGrid(wingcheck.Item1);
+                var SecondGrid = GetMiniGrid(wingcheck.Item2);
+                var sameValue = secondCandidates.Contains(firstCandidates[0]) ? firstCandidates[0] : firstCandidates[1];
+                var findset = ((from f in firstCandidates where f != sameValue select f).Concat(from f2 in secondCandidates where f2 != sameValue select f2)).ToList();
+                var Unique1 = findset.First();
+                var Unique2 = findset.Last();
+                //search through the two-candidate cells of second unit, finding a cell with the values in findset as a possibility.
+                foreach(var secondunitcell in SecondUnitTwoCandidates)
+                {
+                    if(FirstUnitTwoCandidates.Contains(secondunitcell))
+                    {
+                        continue;
+                    }
+                    var secondcellcandidates = ModifiedPossibleValues[secondunitcell];
+                    if(secondcellcandidates.Contains(Unique1) && secondcellcandidates.Contains(Unique2))
+                    {
+                        //we can remove samevalue from the cells that are buddies with both the first wing and this secondcellcandidate XOR with the second wing and this secondcellcandidate.
+                        foreach(var allcell in CellData)
+                        {
+                            var allcellgrid = GetMiniGrid(allcell.Value);
+
+                            var firstmatch = allcellgrid == FirstGrid || allcell.Key.Item1 == wingcheck.Item1.X || allcell.Key.Item2 == wingcheck.Item1.Y;
+                            var secondmatch = allcellgrid == SecondGrid || allcell.Key.Item1 == wingcheck.Item2.X || allcell.Key.Item2 == wingcheck.Item2.Y;
+                            if(firstmatch ^ secondmatch)
+                            {
+                                //this cell is an applicable candidate to strip out samevalue from the list of candidates.
+                                var allcellcandidates = ModifiedPossibleValues[allcell.Value];
+                                if(allcellcandidates.Contains(sameValue))
+                                {
+                                    allcellcandidates.Remove(sameValue);
+                                    ChangeCount++;
+                                }
+
+                            }
+
+
+
+
+                        }
+                        if (ChangeCount > 0) return ChangeCount; //because there have been changes, let's drop back out to allow further CRME in the main solver.
+                    }
+                }
+            }
+
+
+            //An XY-Wing is a group of three cells, one sharing a unit with the other two, each having only 2 candidates.
+            //The two cells that share a unit with the first are called the Wings. Each of the wings must share one candidate with the first cell, 
+            //(that's part of sharing a unit) but of different values. If the second candidates in the wings are both the same, 
+            //and both share a unit with a common candidate in a fourth cell, that candidate can be eliminated.
+            return 0;
+        }
+        private int LoneRangerSearch(Dictionary<SudokuCell, List<int>> ModifiedPossibleValues, IEnumerable<SudokuCell> SearchEntries)
         {
             //a "lone Ranger" search tries to find instances where a number only appears as a possible value within one of the cells.
             //For a data structure we will have a series of buckets:
             //number is the main key; each  entries has a list of the cells that have that number as a possible value.
             int changedCount = 0;
-            Dictionary<int, List<SodokuCell>> Possibles = new Dictionary<int, List<SodokuCell>>();
+            Dictionary<int, List<SudokuCell>> Possibles = new Dictionary<int, List<SudokuCell>>();
             for(int i = 1;i < 10;i++)
             {
-                Possibles.Add(i, new List<SodokuCell>());
+                Possibles.Add(i, new List<SudokuCell>());
             }
 
             //go through each Cell, get the possible values, and add it to the list at that index.
@@ -630,7 +752,7 @@ namespace BASeDoku
         public bool SolvePuzzle(int RecursionCount,bool pRandomize=false,bool NoBrute = false)
         {
             
-            Dictionary<SodokuCell, List<int>> ModifiedPossibleValues = new Dictionary<SodokuCell, List<int>>();
+            Dictionary<SudokuCell, List<int>> ModifiedPossibleValues = new Dictionary<SudokuCell, List<int>>();
             int ChangeCount = 0;
             foreach(var iterateCell in AllCells())
             {
@@ -639,7 +761,7 @@ namespace BASeDoku
             int unfounditerationcount = 0;
             bool StillSolving = true;
             int OuterloopUnchangedCount = 0;
-            ModifiedPossibleValues = new Dictionary<SodokuCell, List<int>>();
+            ModifiedPossibleValues = new Dictionary<SudokuCell, List<int>>();
             foreach (var iterateCell in AllCells())
             {
                 ModifiedPossibleValues.Add(iterateCell, new List<int>(GetValidValuesForCell(iterateCell)));
@@ -678,6 +800,14 @@ namespace BASeDoku
                         var CRMEChange3 = ColumnRowMinigridElimination(ModifiedPossibleValues);
                         ChangeCount += CRMEChange3;
                     }
+                    int checkforXY = XYElimination(ModifiedPossibleValues);
+                    ChangeCount += checkforXY;
+                    if(checkforXY > 0)
+                    {
+                        var CRMEChange4 = ColumnRowMinigridElimination(ModifiedPossibleValues);
+                        ChangeCount += CRMEChange4;
+                    }
+
 
                     if (ChangeCount > 0) unfounditerationcount = 0;
                     unfounditerationcount++;
@@ -688,7 +818,7 @@ namespace BASeDoku
                 bool testfinished = IsPuzzleSolved();
                 if (!testfinished)
                 {
-                    ModifiedPossibleValues = new Dictionary<SodokuCell, List<int>>();
+                    ModifiedPossibleValues = new Dictionary<SudokuCell, List<int>>();
                     foreach (var iterateCell in AllCells())
                     {
                         ModifiedPossibleValues.Add(iterateCell, new List<int>(GetValidValuesForCell(iterateCell)));
@@ -711,7 +841,7 @@ namespace BASeDoku
             }
             return isSolved;
         }
-        private bool HasAllValues(IEnumerable<SodokuCell> Cells)
+        private bool HasAllValues(IEnumerable<SudokuCell> Cells)
         {
             List<int> CheckValues = Enumerable.Range(1, 9).ToList();
             foreach (var ColumnItem in Cells)
@@ -749,7 +879,7 @@ namespace BASeDoku
 
         }
 
-        public SodokuCell GetCellAtPosition(int pX,int pY)
+        public SudokuCell GetCellAtPosition(int pX,int pY)
         {
             ValidateGridPosition(pX, pY);
             Tuple<int, int> FindKey = new Tuple<int, int>(pX, pY);
@@ -763,7 +893,7 @@ namespace BASeDoku
             if (pY < 1 || pY > 9) throw new ArgumentException("pY");
         }
 
-        private IEnumerable<SodokuCell> GetRowEnumerable (int pRow)
+        private IEnumerable<SudokuCell> GetRowEnumerable (int pRow)
         {
             if(pRow > RowCount || pRow < 1) throw new ArgumentException("pRow");
             for(int x=1;x<=ColumnCount;x++)
@@ -772,7 +902,7 @@ namespace BASeDoku
                 yield return GrabCell;
             }
         }
-        private IEnumerable<SodokuCell> GetColumnEnumerable(int pColumn)
+        private IEnumerable<SudokuCell> GetColumnEnumerable(int pColumn)
         {
             if(pColumn > ColumnCount || pColumn < 1) throw new ArgumentException("pColumn");
             for(int y=1;y<=RowCount;y++)
@@ -781,34 +911,34 @@ namespace BASeDoku
                 yield return GrabCell;
             }
         }
-        public IEnumerable<SodokuCell> AllCells()
+        public IEnumerable<SudokuCell> AllCells()
         {
             return CellData.Values;
         }
-        public IList<SodokuCell> GetRow(int pRow)
+        public IList<SudokuCell> GetRow(int pRow)
         {
-            List<SodokuCell> BuildRow = new List<SodokuCell>();
-            foreach(SodokuCell iterate in GetRowEnumerable(pRow))
+            List<SudokuCell> BuildRow = new List<SudokuCell>();
+            foreach(SudokuCell iterate in GetRowEnumerable(pRow))
             {
                 BuildRow.Add(iterate);
             }
             return BuildRow;
         }
-        public IList<SodokuCell> GetColumn(int pColumn)
+        public IList<SudokuCell> GetColumn(int pColumn)
         {
-            List<SodokuCell> BuildColumn = new List<SodokuCell>();
-            foreach(SodokuCell iterate in GetColumnEnumerable(pColumn))
+            List<SudokuCell> BuildColumn = new List<SudokuCell>();
+            foreach(SudokuCell iterate in GetColumnEnumerable(pColumn))
             {
                 BuildColumn.Add(iterate);
             }
             return BuildColumn;
         }
-        public void CellEvent(SodokuCellEvent eventarg)
+        public void CellEvent(SudokuCellEvent eventarg)
         {
             var temp = PuzzleSolved;
             if (temp != null)
             {
-                if (eventarg is SodokuCellEvent_Changed)
+                if (eventarg is SudokuCellEvent_Changed)
                 {
                     if (IsPuzzleSolved())
                     {
@@ -827,7 +957,7 @@ namespace BASeDoku
                 clearcell.Highlighted = false;
             }
         }
-        public void SetHighlight(IEnumerable<SodokuCell> NewHighlight)
+        public void SetHighlight(IEnumerable<SudokuCell> NewHighlight)
         {
             ClearHighlight();
             foreach(var iterateentry in NewHighlight)
@@ -836,7 +966,7 @@ namespace BASeDoku
             }
         }
 
-        public SodokuCell HitTest(float pX,float pY,float pWidth,float pHeight)
+        public SudokuCell HitTest(float pX,float pY,float pWidth,float pHeight)
         {
             float CellHeight = pHeight / 9;
             float CellWidth = pWidth / 9;

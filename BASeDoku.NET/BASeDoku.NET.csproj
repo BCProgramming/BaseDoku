@@ -56,7 +56,7 @@
     </Compile>
     <Compile Include="BoardColourTheme.cs" />
     <Compile Include="DebugLog.cs" />
-    <Compile Include="ISodokuBoardHandler.cs" />
+    <Compile Include="ISudokuBoardHandler.cs" />
     <Compile Include="MiniGrid.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -65,9 +65,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SodokuBoard.cs" />
-    <Compile Include="SodokuBoardDrawer.cs" />
-    <Compile Include="SodokuCell.cs" />
+    <Compile Include="SolverChangeLog.cs" />
+    <Compile Include="SudokuBoard.cs" />
+    <Compile Include="SudokuBoardDrawer.cs" />
+    <Compile Include="SudokuCell.cs" />
     <Compile Include="Win10MenuRenderer.cs" />
     <EmbeddedResource Include="BASeDoku.resx">
       <DependentUpon>BASeDoku.cs</DependentUpon>

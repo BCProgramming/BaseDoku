@@ -10,9 +10,9 @@ using Microsoft.Win32;
 
 namespace BASeDoku
 {
-    public class SodokuCell : IXmlPersistable
+    public class SudokuCell : IXmlPersistable
     {
-        public ISodokuBoardHandler Owner { get; private set; }
+        public ISudokuBoardHandler Owner { get; private set; }
         public int X { get; private set; }
         public int Y { get; private set; }
         public void ResetPosition(int pX,int pY)
@@ -31,30 +31,30 @@ namespace BASeDoku
             {
                 if (value != _Value)
                 {
-                    SodokuCellEvent_Changing changing = new SodokuCellEvent_Changing(this,_Value,value);
+                    SudokuCellEvent_Changing changing = new SudokuCellEvent_Changing(this,_Value,value);
                     changing.Cancelled = false;
                     Owner?.CellEvent(changing);
                     if (changing.Cancelled) return;
                     _Value = value;
-                    SodokuCellEvent_Changed changed = new SodokuCellEvent_Changed(this,_Value);
+                    SudokuCellEvent_Changed changed = new SudokuCellEvent_Changed(this,_Value);
                     Owner?.CellEvent(changed);
 
                 }
             } }
-        public void SetHandler(ISodokuBoardHandler pHandler)
+        public void SetHandler(ISudokuBoardHandler pHandler)
         {
             Owner = pHandler;
         }
-        public SodokuCell(ISodokuBoardHandler pOwner,int pX,int pY):this(pOwner)
+        public SudokuCell(ISudokuBoardHandler pOwner,int pX,int pY):this(pOwner)
         {
             this.X = pX;
             this.Y = pY;
         }
-        public SodokuCell(ISodokuBoardHandler pOwner)
+        public SudokuCell(ISudokuBoardHandler pOwner)
         {
             Owner = pOwner;
         }
-        public SodokuCell(XElement Source, Object pPersistenceData)
+        public SudokuCell(XElement Source, Object pPersistenceData)
         {
             X = Source.GetAttributeInt("X", 0);
             Y = Source.GetAttributeInt("Y", 0);
@@ -62,7 +62,7 @@ namespace BASeDoku
         }
         public XElement GetXmlData(string pNodeName, object PersistenceData)
         {
-            var Result = new XElement("SodokuCell",new XAttribute("X",this.X),new XAttribute("Y",this.Y),new XAttribute("Value",this.Value));
+            var Result = new XElement("SudokuCell",new XAttribute("X",this.X),new XAttribute("Y",this.Y),new XAttribute("Value",this.Value));
             return Result;
         }
     }

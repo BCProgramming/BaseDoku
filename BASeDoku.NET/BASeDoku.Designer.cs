@@ -53,7 +53,7 @@
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statMain = new System.Windows.Forms.StatusStrip();
             this.PanMainView = new System.Windows.Forms.Panel();
-            this.PicSodoku = new System.Windows.Forms.PictureBox();
+            this.PicSudoku = new System.Windows.Forms.PictureBox();
             this.txtInputText = new System.Windows.Forms.TextBox();
             this.emptyBoardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.generatePuzzleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -62,7 +62,7 @@
             this.mStripMain.SuspendLayout();
             this.statMain.SuspendLayout();
             this.PanMainView.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.PicSodoku)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PicSudoku)).BeginInit();
             this.SuspendLayout();
             // 
             // mStripMain
@@ -272,24 +272,24 @@
             this.PanMainView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.PanMainView.Controls.Add(this.PicSodoku);
+            this.PanMainView.Controls.Add(this.PicSudoku);
             this.PanMainView.Location = new System.Drawing.Point(0, 31);
             this.PanMainView.Name = "PanMainView";
             this.PanMainView.Size = new System.Drawing.Size(432, 346);
             this.PanMainView.TabIndex = 2;
             // 
-            // PicSodoku
+            // PicSudoku
             // 
-            this.PicSodoku.BackColor = System.Drawing.Color.White;
-            this.PicSodoku.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.PicSodoku.Location = new System.Drawing.Point(0, 0);
-            this.PicSodoku.Margin = new System.Windows.Forms.Padding(0);
-            this.PicSodoku.Name = "PicSodoku";
-            this.PicSodoku.Size = new System.Drawing.Size(432, 346);
-            this.PicSodoku.TabIndex = 0;
-            this.PicSodoku.TabStop = false;
-            this.PicSodoku.Paint += new System.Windows.Forms.PaintEventHandler(this.PicSodoku_Paint);
-            this.PicSodoku.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PicSodoku_MouseDown);
+            this.PicSudoku.BackColor = System.Drawing.Color.White;
+            this.PicSudoku.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.PicSudoku.Location = new System.Drawing.Point(0, 0);
+            this.PicSudoku.Margin = new System.Windows.Forms.Padding(0);
+            this.PicSudoku.Name = "PicSudoku";
+            this.PicSudoku.Size = new System.Drawing.Size(432, 346);
+            this.PicSudoku.TabIndex = 0;
+            this.PicSudoku.TabStop = false;
+            this.PicSudoku.Paint += new System.Windows.Forms.PaintEventHandler(this.PicSudoku_Paint);
+            this.PicSudoku.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PicSudoku_MouseDown);
             // 
             // txtInputText
             // 
@@ -346,7 +346,7 @@
             this.statMain.ResumeLayout(false);
             this.statMain.PerformLayout();
             this.PanMainView.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.PicSodoku)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PicSudoku)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -375,7 +375,7 @@
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.StatusStrip statMain;
         private System.Windows.Forms.Panel PanMainView;
-        private System.Windows.Forms.PictureBox PicSodoku;
+        private System.Windows.Forms.PictureBox PicSudoku;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem3;
         private System.Windows.Forms.ToolStripMenuItem hintToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem solvePuzzleToolStripMenuItem;

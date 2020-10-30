@@ -21,8 +21,8 @@ namespace BASeDoku
         {
             InitializeComponent();
         }
-        SodokuBoard GameBoard = null;
-        SodokuBoardGDIPlusHandler BoardDrawHandler;
+        SudokuBoard GameBoard = null;
+        SudokuBoardGDIPlusHandler BoardDrawHandler;
         private DateTime _StartPuzzleTime = DateTime.MinValue;
         private System.Threading.Timer PuzzleTimer = null;
         public DateTime StartPuzzleTime
@@ -57,8 +57,8 @@ namespace BASeDoku
         {
             Icon = Resources.Application_Icon;
             Random rgen = new Random();
-            GameBoard  = new SodokuBoard();
-            BoardDrawHandler = new SodokuBoardGDIPlusHandler(GameBoard, BoardColourTheme.Windows10Theme());
+            GameBoard  = new SudokuBoard();
+            BoardDrawHandler = new SudokuBoardGDIPlusHandler(GameBoard, BoardColourTheme.Windows10Theme());
             mStripMain.Renderer = new Win10MenuRenderer();
             BackColor = BoardDrawHandler.ColourScheme.Background;
             statMain.BackColor = BackColor;
@@ -67,41 +67,41 @@ namespace BASeDoku
             {
                 //currCell.Value = rgen.Next(1, 9);
             }
-            PicSodoku.Invalidate();
-            PicSodoku.Update();
-            PicSodoku.Refresh();
+            PicSudoku.Invalidate();
+            PicSudoku.Update();
+            PicSudoku.Refresh();
             Text += " " + ProductVersion;
         }
 
-        private void PicSodoku_Paint(object sender, PaintEventArgs e)
+        private void PicSudoku_Paint(object sender, PaintEventArgs e)
         {
 
-            BoardDrawHandler.Draw(e.Graphics, PicSodoku.ClientSize.Width, PicSodoku.ClientSize.Height);
+            BoardDrawHandler.Draw(e.Graphics, PicSudoku.ClientSize.Width, PicSudoku.ClientSize.Height);
         }
 
         private void BASeDoku_Resize(object sender, EventArgs e)
         {
-            PicSodoku.Invalidate();
-            PicSodoku.Refresh();
+            PicSudoku.Invalidate();
+            PicSudoku.Refresh();
         }
-        private SodokuCell SelectedCell = null;
-        private void PicSodoku_MouseDown(object sender, MouseEventArgs e)
+        private SudokuCell SelectedCell = null;
+        private void PicSudoku_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
                 if (SelectedCell != null) SelectedCell.Selected = false;
-                SelectedCell = GameBoard.HitTest(e.X, e.Y, PicSodoku.ClientSize.Width, PicSodoku.ClientSize.Height);
+                SelectedCell = GameBoard.HitTest(e.X, e.Y, PicSudoku.ClientSize.Width, PicSudoku.ClientSize.Height);
                 SelectedCell.Selected = true;
-                PicSodoku.Invalidate();
-                PicSodoku.Refresh();
+                PicSudoku.Invalidate();
+                PicSudoku.Refresh();
             }
             else if (e.Button == MouseButtons.Right)
             {
                 if (SelectedCell != null) SelectedCell.Selected = false;
-                SelectedCell = GameBoard.HitTest(e.X, e.Y, PicSodoku.ClientSize.Width, PicSodoku.ClientSize.Height);
+                SelectedCell = GameBoard.HitTest(e.X, e.Y, PicSudoku.ClientSize.Width, PicSudoku.ClientSize.Height);
                 SelectedCell.Selected = true;
-                PicSodoku.Invalidate();
-                PicSodoku.Refresh();
+                PicSudoku.Invalidate();
+                PicSudoku.Refresh();
 
                 List<int> ValidValues = new List<int>(GameBoard.GetValidValuesForCell(SelectedCell));
                 if (ValidValues.Any() && !SelectedCell.Locked)
@@ -119,8 +119,8 @@ namespace BASeDoku
                             {
                                 PushBoardState();
                                 SelectedCell.Value = int.Parse(BuildItem.Text);
-                                PicSodoku.Invalidate();
-                                PicSodoku.Refresh();
+                                PicSudoku.Invalidate();
+                                PicSudoku.Refresh();
                             };
                         }
                         else
@@ -132,7 +132,7 @@ namespace BASeDoku
                             {
                                 //when we hover over a disabled item, we want to highlight the cell(s) that are why this number cannot be selected.
                                 int FindNumber = int.Parse(BuildItem.Text);
-                                HashSet<SodokuCell> FoundNumbered = new HashSet<SodokuCell>();
+                                HashSet<SudokuCell> FoundNumbered = new HashSet<SudokuCell>();
                                 //look through the selected item's row...
                                 foreach(var findrow in GameBoard.GetRow(SelectedCell.Y))
                                 {
@@ -155,16 +155,16 @@ namespace BASeDoku
                                     }
                                 }
                                 GameBoard.SetHighlight(FoundNumbered);
-                                PicSodoku.Invalidate();
-                                PicSodoku.Refresh();
+                                PicSudoku.Invalidate();
+                                PicSudoku.Refresh();
 
                             };
                             
                             cms.Closing += (o3, ev3) =>
                             {
                                 GameBoard.ClearHighlight();
-                                PicSodoku.Invalidate();
-                                PicSodoku.Refresh();
+                                PicSudoku.Invalidate();
+                                PicSudoku.Refresh();
                             };
                         }
                         
@@ -176,8 +176,8 @@ namespace BASeDoku
                     {
                         PushBoardState();
                         SelectedCell.Value = 0;
-                        PicSodoku.Invalidate();
-                        PicSodoku.Refresh();
+                        PicSudoku.Invalidate();
+                        PicSudoku.Refresh();
                     };
                     if (SelectedCell.Value != 0)
                         cms.Items.Add(ClearItem);
@@ -185,7 +185,7 @@ namespace BASeDoku
                     cms.Opening += (Contextstrip, arguments) => { ((ContextMenuStrip)Contextstrip).Renderer = new Win10MenuRenderer(); };
                     cms.Opened += Cms_Opened;
 
-                    cms.Show(PicSodoku, e.X, e.Y);
+                    cms.Show(PicSudoku, e.X, e.Y);
 
 
                 }
@@ -217,8 +217,8 @@ namespace BASeDoku
                 PushBoardState();
                 if (GameBoard.SolvePuzzle(0))
                 {
-                    PicSodoku.Invalidate();
-                    PicSodoku.Refresh();
+                    PicSudoku.Invalidate();
+                    PicSudoku.Refresh();
                     MessageBox.Show("Puzzle Solved.");
                 }
             }
@@ -274,13 +274,13 @@ namespace BASeDoku
                     PushBoardState();
                     SelectedCell.Value = EnteredValue;
                     SelectedCell.Selected = false;
-                    PicSodoku.Invalidate();
-                    PicSodoku.Refresh();
+                    PicSudoku.Invalidate();
+                    PicSudoku.Refresh();
                 }
 
             }
         }
-        private String FileFilter = "BASeDoku Sodoku Puzzle (*.BaseDoku)|*.BaseDoku|All Files (*.*)|*.*";
+        private String FileFilter = "BASeDoku Sudoku Puzzle (*.BaseDoku)|*.BaseDoku|All Files (*.*)|*.*";
         private void saveAsLockedToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (SaveFileDialog sfd = new SaveFileDialog())
@@ -322,8 +322,8 @@ namespace BASeDoku
                     SavedPuzzleFile = ofd.FileName;
                     GameBoard.Clear();
                     GameBoard.Load(ofd.FileName);
-                    PicSodoku.Invalidate();
-                    PicSodoku.Refresh();
+                    PicSudoku.Invalidate();
+                    PicSudoku.Refresh();
                     StartPuzzleTime = DateTime.Now;
                 }
             }
@@ -344,10 +344,10 @@ namespace BASeDoku
         private void generatePuzzleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             int emptycells = getEmptyCellCountForDifficulty();
-            GameBoard = SodokuBoard.GeneratePuzzle(emptycells);
+            GameBoard = SudokuBoard.GeneratePuzzle(emptycells);
             BoardDrawHandler.GameBoard = GameBoard;
-            PicSodoku.Invalidate();
-            PicSodoku.Refresh();
+            PicSudoku.Invalidate();
+            PicSudoku.Refresh();
             StartPuzzleTime = DateTime.Now;
         }
         private int getEmptyCellCountForDifficulty()
@@ -388,7 +388,7 @@ namespace BASeDoku
 
         private void emptyBoardToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            GameBoard = new SodokuBoard();
+            GameBoard = new SudokuBoard();
             BoardDrawHandler.GameBoard = GameBoard;
         }
 
@@ -422,15 +422,15 @@ namespace BASeDoku
         private void undoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             UndoState();
-            PicSodoku.Invalidate();
-            PicSodoku.Refresh();
+            PicSudoku.Invalidate();
+            PicSudoku.Refresh();
         }
 
         private void redoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             RedoState();
-            PicSodoku.Invalidate();
-            PicSodoku.Refresh();
+            PicSudoku.Invalidate();
+            PicSudoku.Refresh();
         }
 
         private void fileToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
@@ -464,7 +464,7 @@ namespace BASeDoku
                 Stopwatch watcher = new Stopwatch();
                 Thread.Sleep(500);
                 watcher.Start();
-                SodokuBoard GenerateBoard = SodokuBoard.GeneratePuzzle(emptycells);
+                SudokuBoard GenerateBoard = SudokuBoard.GeneratePuzzle(emptycells);
                 watcher.Stop();
                 Debug.Print("Puzzle #" + i + " Generated in " + watcher.Elapsed.ToString());
                 if (MinExec > watcher.Elapsed) MinExec = watcher.Elapsed;
@@ -472,8 +472,8 @@ namespace BASeDoku
                 Elapsed.Add(watcher.Elapsed);
                 //BoardDrawHandler.GameBoard = GameBoard;
                 Text = "Debug:" + i;
-                //PicSodoku.Invalidate();
-                //PicSodoku.Refresh();
+                //PicSudoku.Invalidate();
+                //PicSudoku.Refresh();
             }
 
             TimeSpan AvgExec = new TimeSpan((int)Elapsed.Average((r) => r.Ticks));
