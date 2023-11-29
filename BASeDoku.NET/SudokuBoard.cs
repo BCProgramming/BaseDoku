@@ -233,9 +233,15 @@ namespace BASeDoku
             if (UnfilledCells.Count == 1) return false;
             
             //if randomizing, randomize the cell order.
-            if(pRandomize) Shuffle(UnfilledCells,rng);
+            
 
-
+            Dictionary<SudokuCell, IList<int>> CellDomains = new Dictionary<SudokuCell, IList<int>>();
+            foreach (var iteratecell in UnfilledCells)
+            {
+                CellDomains.Add(iteratecell, GetValidValuesForCell(iteratecell));
+            }
+            if (pRandomize) Shuffle(UnfilledCells, rng);
+            else UnfilledCells.OrderBy((f) => CellDomains[f].Count);
             foreach (var UnfilledCell in UnfilledCells)
             {
                 var CellValues = GetValidValuesForCell(UnfilledCell);
@@ -749,6 +755,7 @@ namespace BASeDoku
             }
             return changedCount;
         }
+        
         public bool SolvePuzzle(int RecursionCount,bool pRandomize=false,bool NoBrute = false)
         {
             
@@ -800,20 +807,20 @@ namespace BASeDoku
                         var CRMEChange3 = ColumnRowMinigridElimination(ModifiedPossibleValues);
                         ChangeCount += CRMEChange3;
                     }
-                    int checkforXY = XYElimination(ModifiedPossibleValues);
+                    /*int checkforXY = XYElimination(ModifiedPossibleValues);
                     ChangeCount += checkforXY;
                     if(checkforXY > 0)
                     {
                         var CRMEChange4 = ColumnRowMinigridElimination(ModifiedPossibleValues);
                         ChangeCount += CRMEChange4;
                     }
-
+                    */
 
                     if (ChangeCount > 0) unfounditerationcount = 0;
                     unfounditerationcount++;
 
                 }
-                while (ChangeCount > 0 && unfounditerationcount < 100);
+                while (ChangeCount > 0 && unfounditerationcount < 3);
 
                 bool testfinished = IsPuzzleSolved();
                 if (!testfinished)

@@ -56,6 +56,7 @@
     </Compile>
     <Compile Include="BoardColourTheme.cs" />
     <Compile Include="DebugLog.cs" />
+    <Compile Include="IBaseDokuManager.cs" />
     <Compile Include="ISudokuBoardHandler.cs" />
     <Compile Include="MiniGrid.cs" />
     <Compile Include="Program.cs" />
@@ -106,6 +107,10 @@
     <Content Include="todolist.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\BCRenderingAdapter\BCRenderingAdapter\BCRenderingAdapter.csproj">
+      <Project>{e7c2ca46-4aab-4966-b251-02b68e3aa0f2}</Project>
+      <Name>BCRenderingAdapter</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\XMLSerialization\Elementizer.csproj">
       <Project>{850a1563-ac23-4b60-bbcf-503b2bb69547}</Project>
       <Name>Elementizer</Name>

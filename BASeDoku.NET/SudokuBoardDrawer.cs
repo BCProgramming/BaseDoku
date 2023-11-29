@@ -6,10 +6,18 @@ using System.Drawing.Text;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using BASeCamp.Rendering;
 namespace BASeDoku
 {
-    public class SudokuBoardGDIPlusHandler
+    public class SudokuGDIDrawData
+    {
+        public Rectangle Bounds { get; set; }
+        public SudokuGDIDrawData(Rectangle pRect)
+        {
+            Bounds = pRect;
+        }
+    }
+    public class SudokuBoardGDIPlusHandler : BASeCamp.Rendering.Interfaces.IRenderingHandler<Graphics,SudokuBoard,SudokuGDIDrawData,IBaseDokuManager>
     {
         public BoardColourTheme ColourScheme = new BoardColourTheme();
         public SudokuBoard GameBoard = null;
@@ -122,6 +130,20 @@ namespace BASeDoku
             {
                 float YDrawPos = ((y - 1) * pUseHeight);
                 Target.DrawLine((y - 1) % 3 == 0 ? AltPen : UsePen, 0, YDrawPos, pWidth, YDrawPos);
+            }
+        }
+
+        public void Render(IBaseDokuManager pOwner, Graphics pRenderTarget, SudokuBoard Source, SudokuGDIDrawData Element)
+        {
+            SudokuBoardGDIPlusHandler newdrawer = new SudokuBoardGDIPlusHandler(Source, new BoardColourTheme());
+            newdrawer.Draw(pRenderTarget, Element.Bounds.Width, Element.Bounds.Height);
+        }
+
+        public void Render(IBaseDokuManager pOwner, object pRenderTarget, object RenderSource, object Element)
+        {
+            if(pRenderTarget is Graphics g && RenderSource is SudokuBoard sb && Element is SudokuGDIDrawData elem )
+            {
+                Render(pOwner, g, sb, elem);
             }
         }
     }
